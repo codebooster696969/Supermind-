@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
 import { 
@@ -22,6 +22,7 @@ export default function Navbar() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null); // Create a reference for the dropdown
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -56,6 +57,22 @@ export default function Navbar() {
     setIsOpen(false);
     setIsMobileMenuOpen(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false); // Close the dropdown if click is outside
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -97,7 +114,7 @@ export default function Navbar() {
             <NavLink to="/kundali" icon={<User size={20} />} text="Kundali" isActive={isActive('/kundali')} />
             
             {/* Features Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
@@ -107,7 +124,7 @@ export default function Navbar() {
               </button>
               
               {isOpen && (
-                <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-2">
+                <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-2 z-10">
                   {features.map((feature, index) => (
                     <Link
                       key={index}
@@ -188,11 +205,7 @@ function NavLink({ to, icon, text, isActive }: { to: string; icon: React.ReactNo
   return (
     <Link
       to={to}
-      className={`flex items-center space-x-2 ${
-        isActive
-          ? 'text-indigo-600 dark:text-indigo-400'
-          : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'
-      }`}
+      className={`flex items-center space-x-2 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
     >
       {icon}
       <span>{text}</span>
@@ -216,15 +229,13 @@ function MobileNavLink({
   return (
     <Link
       to={to}
-      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
-        isActive
-          ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
-          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-      }`}
       onClick={onClick}
+      className={`block px-3 py-2 rounded-md text-base font-medium ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
     >
-      {icon}
-      <span>{text}</span>
+      <div className="flex items-center space-x-2">
+        {icon}
+        <span>{text}</span>
+      </div>
     </Link>
   );
 }

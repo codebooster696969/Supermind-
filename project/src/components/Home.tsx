@@ -7,12 +7,13 @@ const CosmicBackground = () => {
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-gray-900 to-gray-900">
         <div className="stars"></div>
+        <div className="shooting-stars"></div>
       </div>
       
-      {/* Responsive planets - hidden on smaller screens */}
       <div className="planet planet-1 hidden md:block"></div>
       <div className="planet planet-2 hidden md:block"></div>
       <div className="planet planet-3 hidden md:block"></div>
+      <div className="zodiac-ring hidden lg:block"></div>
     </div>
   );
 };
@@ -20,6 +21,12 @@ const CosmicBackground = () => {
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,81 +36,37 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Rest of your component remains the same until the style tag
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900">
       <CosmicBackground />
       
-      {/* Mobile-friendly Navigation */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-gray-900/95 shadow-xl' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* <div className="flex items-center space-x-2">
-              <Star className="w-6 h-6 text-purple-400" />
-              <span className="text-xl font-bold text-white">Cosmic Journey</span>
-            </div> */}
-            
-            {/* Mobile menu button */}
-            {/* <div className="md:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-white p-2"
-              >
-                {isMenuOpen ? <X /> : <Menu />}
-              </button>
-            </div> */}
-
-            {/* Desktop navigation */}
-            {/* <div className="hidden md:flex items-center space-x-6">
-              <Link to="/about" className="text-white hover:text-purple-400 transition-colors">About</Link>
-              <Link to="/features" className="text-white hover:text-purple-400 transition-colors">Features</Link>
-              <Link
-                to="/kundali"
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
-              >
-                Start Journey
-              </Link>
-            </div> */}
-          </div>
-
-          {/* Mobile menu */}
-          <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden mt-4`}>
-            <div className="flex flex-col space-y-4 pb-4">
-              <Link to="/about" className="text-white hover:text-purple-400 transition-colors">About</Link>
-              <Link to="/features" className="text-white hover:text-purple-400 transition-colors">Features</Link>
-              <Link
-                to="/kundali"
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 text-center"
-              >
-                Start Journey
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Responsive Hero Section */}
+      {/* Your existing navigation code */}
+      
       <div className="relative min-h-screen flex items-center px-4 sm:px-6 lg:px-8">
         <div className="relative max-w-7xl mx-auto py-12 md:py-24 text-center z-10">
+          {/* <div className="mystical-border p-1 inline-block mb-6">
+            
+          </div> */}
           <div className="animate-fade-in-up space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-400 leading-tight magic-text">
               Discover Your Cosmic Journey
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto px-4">
+            <p className="text-lg sm:text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto px-4 cosmic-glow">
               Unlock the secrets of the universe with AI-powered astrological insights tailored just for you
             </p>
             <Link
               to="/kundali"
-              className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-base sm:text-lg font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105"
+              className="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 text-white text-lg font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 mystical-button"
             >
+              <Sparkles className="mr-2 h-5 w-5" />
               Generate Your Kundali
               <ChevronRight className="ml-2 -mr-1 w-5 h-5" />
             </Link>
           </div>
         </div>
       </div>
-
       {/* Responsive Feature Grid */}
       <div className="relative max-w-7xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-8 z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -155,10 +118,152 @@ export default function Home() {
           animation: twinkle 5s ease-in-out infinite alternate;
         }
 
+        .shooting-stars {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          transform: rotate(-45deg);
+        }
+
+        .shooting-stars::before, .shooting-stars::after {
+          content: "";
+          position: absolute;
+          background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));
+          width: 100px;
+          height: 1px;
+          animation: shooting 5s infinite linear;
+          opacity: 0;
+        }
+
+        .shooting-stars::after {
+          animation-delay: 2.5s;
+        }
+
+        .mystical-border {
+          background: linear-gradient(45deg, #ff8a00, #e52e71, #4facfe, #00f2fe);
+          border-radius: 1rem;
+          padding: 2px;
+          animation: border-pulse 3s infinite;
+        }
+
+        .cosmic-time {
+          background: rgba(0, 0, 0, 0.3);
+          padding: 0.5rem 2rem;
+          border-radius: 1rem;
+          backdrop-filter: blur(4px);
+        }
+
+        .zodiac-ring {
+          position: absolute;
+          width: 600px;
+          height: 600px;
+          border: 2px solid rgba(147, 51, 234, 0.3);
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          animation: rotate 60s linear infinite;
+        }
+
+        .zodiac-ring::before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border: 1px solid rgba(147, 51, 234, 0.1);
+          border-radius: 50%;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        .mystical-button {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .mystical-button::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+          transform: rotate(45deg);
+          animation: shimmer 3s infinite;
+        }
+
+        .magic-text {
+          animation: colorChange 8s infinite;
+        }
+
+        .cosmic-glow {
+          text-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+        }
+
+        @keyframes shooting {
+          0% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(300px);
+            opacity: 0;
+          }
+        }
+
+        @keyframes border-pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+
+        @keyframes rotate {
+          from {
+            transform: translate(-50%, -50%) rotate(0deg);
+          }
+          to {
+            transform: translate(-50%, -50%) rotate(360deg);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.5;
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: rotate(45deg) translateY(-100%);
+          }
+          100% {
+            transform: rotate(45deg) translateY(100%);
+          }
+        }
+
+        @keyframes colorChange {
+          0%, 100% {
+            filter: hue-rotate(0deg);
+          }
+          50% {
+            filter: hue-rotate(30deg);
+          }
+        }
+
+        /* Enhanced planet animations */
         .planet {
           position: absolute;
           border-radius: 50%;
           opacity: 0.6;
+          box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
 
         .planet-1 {
@@ -167,7 +272,7 @@ export default function Home() {
           background: radial-gradient(circle at 30% 30%, #ff8a00, #e52e71);
           top: 10%;
           right: 15%;
-          animation: float 15s ease-in-out infinite;
+          animation: float 15s ease-in-out infinite, glow 3s ease-in-out infinite alternate;
         }
 
         .planet-2 {
@@ -176,7 +281,7 @@ export default function Home() {
           background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
           top: 60%;
           left: 10%;
-          animation: float 20s ease-in-out infinite reverse;
+          animation: float 20s ease-in-out infinite reverse, glow 4s ease-in-out infinite alternate;
         }
 
         .planet-3 {
@@ -185,26 +290,19 @@ export default function Home() {
           background: radial-gradient(circle at 30% 30%, #667eea, #764ba2);
           bottom: 20%;
           right: 25%;
-          animation: float 25s ease-in-out infinite;
+          animation: float 25s ease-in-out infinite, glow 5s ease-in-out infinite alternate;
         }
 
-        @keyframes float {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          50% { transform: translate(-20px, 20px) rotate(180deg); }
-          100% { transform: translate(0, 0) rotate(360deg); }
-        }
-
-        @keyframes twinkle {
-          0% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-
-        @media (max-width: 640px) {
-          .planet {
-            transform: scale(0.7);
+        @keyframes glow {
+          0% {
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+          }
+          100% {
+            box-shadow: 0 0 40px rgba(255,255,255,0.4);
           }
         }
       `}</style>
+
     </div>
   );
 }

@@ -11,7 +11,44 @@ app.use(cors({
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
-
+app.post('/api/horoscope-chart-svg', (req, res) => {
+    const {
+      year, month, date, hours, minutes, seconds, latitude, longitude, timezone
+    } = req.body;
+  
+    const config = req.body.config || {
+      observation_point: "topocentric",
+      ayanamsha: "lahiri"
+    };
+  
+    if (
+      !year || !month || !date || !hours || !minutes || !seconds ||
+      !latitude || !longitude || !timezone
+    ) {
+      return res.status(400).json({ error: 'Missing required fields in the request body.' });
+    }
+  
+    const options = {
+      method: 'POST',
+      url: 'https://json.freeastrologyapi.com/horoscope-chart-svg-code',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.XAPIKEY
+      },
+      body: JSON.stringify({
+        year, month, date, hours, minutes, seconds,
+        latitude, longitude, timezone, config
+      })
+    };
+  
+    request(options, (error, response, body) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred while processing the request.' });
+      }
+      res.status(response.statusCode).send(body);
+    });
+  });
 // Route for navamsa chart info API call
 app.post('/api/navamsa-chart-info', (req, res) => {
   const {
@@ -154,6 +191,49 @@ app.post('/api/planets-extended', (req, res) => {
     res.status(response.statusCode).send(body);
   });
 });
+
+app.post('/api/yoga-durations', (req, res) => {
+    const { year, month, date, hours, minutes, seconds, latitude, longitude, timezone, config } = req.body;
+  
+    // Input validation
+    if (!year || !month || !date || !hours || !minutes || !seconds || !latitude || !longitude || !timezone) {
+      return res.status(400).json({ error: 'Missing required fields in the request body.' });
+    }
+  
+    const requestOptions = {
+      method: 'POST',
+      url: 'https://json.freeastrologyapi.com/yoga-durations',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.XAPIKEY, // Use API key from .env file
+      },
+      body: JSON.stringify({
+        year,
+        month,
+        date,
+        hours,
+        minutes,
+        seconds,
+        latitude,
+        longitude,
+        timezone,
+        config: config || { // Default config if not provided
+          observation_point: 'topocentric',
+          ayanamsha: 'lahiri',
+        },
+      }),
+    };
+  
+    // External API call
+    request(requestOptions, (error, response, body) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred while processing the request.' });
+      }
+  
+      res.status(response.statusCode).send(body); // Pass through the response
+    });
+  });
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -1,284 +1,425 @@
 import React, { useState } from 'react';
-import { Sparkles, MapPin, Star, Moon } from 'lucide-react';
+import { Sparkles, MapPin, Star, Moon, Clock, Calendar, User, ArrowLeft, ArrowRight } from 'lucide-react';
 
+// Types remain the same
 interface KundaliData {
-  name: string;
-  dateOfBirth: string;
-  timeOfBirth: string;
-  gender: string;
+  personName: string;
+  birthYear: number;
+  birthMonth: number;
+  birthDate: number;
+  birthHour: number;
+  birthMinutes: number;
+  birthSeconds: number;
+  timeZone: number;
+  sex: string;
   city: string;
   state: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  ayanamsa: string;
 }
 
-// Card Components
-const Card = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`} {...props}>
+interface ApiResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
+const Card = ({ children, className = '' }) => (
+  <div className={`rounded-xl border bg-white/50 backdrop-blur-sm dark:bg-gray-800/50 shadow-xl ${className}`}>
     {children}
   </div>
 );
 
-const CardHeader = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>
+const CardHeader = ({ children, className = '' }) => (
+  <div className={`p-8 border-b border-gray-200 dark:border-gray-700 ${className}`}>
     {children}
   </div>
 );
 
-const CardTitle = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`} {...props}>
-    {children}
-  </h3>
+const CardTitle = ({ children, className = '' }) => (
+  <div className="flex items-center gap-2">
+    <Sparkles className="h-6 w-6 text-indigo-600" />
+    <h3 className={`text-3xl font-bold text-gray-900 dark:text-white ${className}`}>
+      {children}
+    </h3>
+  </div>
 );
 
-const CardDescription = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={`text-sm text-muted-foreground ${className}`} {...props}>
-    {children}
-  </p>
-);
-
-const CardContent = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={`p-6 pt-0 ${className}`} {...props}>
+const CardContent = ({ children, className = '' }) => (
+  <div className={`p-8 ${className}`}>
     {children}
   </div>
 );
 
-// Alert Components
-const Alert = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    role="alert"
-    className={`relative w-full rounded-lg border p-4 [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7 ${className}`}
-    {...props}
-  >
-    {children}
+const FormInput = ({ label, icon: Icon, ...props }) => (
+  <div className="space-y-3">
+    <label className="flex items-center gap-2 text-base font-medium text-gray-700 dark:text-gray-300">
+      {Icon && <Icon className="h-5 w-5 text-indigo-600" />}
+      {label}
+    </label>
+    <input
+      className="block w-full h-12 rounded-lg border-gray-300 bg-white/50 shadow-sm 
+                 transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 
+                 dark:bg-gray-700/50 dark:border-gray-600 dark:text-white text-base px-4"
+      {...props}
+    />
   </div>
 );
 
-const AlertDescription = ({ children, className = '', ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <div className={`text-sm [&_p]:leading-relaxed ${className}`} {...props}>
-    {children}
+// StepIndicator component remains the same
+const StepIndicator = ({ currentStep, totalSteps }) => (
+  <div className="flex items-center justify-between mb-12">
+    {[...Array(totalSteps)].map((_, index) => (
+      <div key={index} className={`flex items-center ${index !== totalSteps - 1 ? 'flex-1' : ''}`}>
+        <div className={`relative w-10 h-10 rounded-full flex items-center justify-center 
+                        transition-all duration-200 ${
+          index < currentStep
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+            : index === currentStep
+            ? 'bg-indigo-100 text-indigo-800 ring-4 ring-indigo-50'
+            : 'bg-gray-100 text-gray-400'
+        }`}>
+          <span className="text-sm font-semibold">{index + 1}</span>
+          {index < currentStep && (
+            <div className="absolute -top-8 w-max text-xs font-medium text-indigo-600">
+              {['Personal Info', 'Birth Details', 'Location', 'Generate'][index]}
+            </div>
+          )}
+        </div>
+        {index !== totalSteps - 1 && (
+          <div className={`flex-1 h-0.5 mx-4 rounded transition-colors duration-200 ${
+            index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
+          }`} />
+        )}
+      </div>
+    ))}
   </div>
 );
 
+// Main component
 export default function KundaliForm() {
+  // State management remains the same
   const [formData, setFormData] = useState<KundaliData>({
-    name: '',
-    dateOfBirth: '',
-    timeOfBirth: '',
-    gender: '',
+    personName: '',
+    birthYear: 2024,
+    birthMonth: 6,
+    birthDate: 10,
+    birthHour: 15,
+    birthMinutes: 10,
+    birthSeconds: 10,
+    timeZone: 5.5,
+    sex: '',
     city: '',
     state: '',
+    country: '',
+    latitude: 18.9333,
+    longitude: 72.8166,
+    ayanamsa: 'KRISHNAMURTHI'
   });
 
   const [loading, setLoading] = useState(false);
-  const [kundaliResult, setKundaliResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any | null>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Event handlers remain the same
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'number' ? parseFloat(value) : value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    setTimeout(() => {
-      setKundaliResult(
-        `Based on your birth details (${formData.dateOfBirth}, ${formData.timeOfBirth}), 
-        here are your key astrological insights:
-        
-        1. Rising Sign (Ascendant): Leo
-           - Natural leadership abilities
-           - Creative expression is key to your growth
-        
-        2. Moon Sign: Cancer
-           - Deep emotional sensitivity
-           - Strong intuitive abilities
-        
-        3. Key Planetary Positions:
-           - Sun in Virgo: Analytical mind, attention to detail
-           - Mercury in Libra: Balanced communication style
-           - Venus in Leo: Charismatic personality
-        
-        4. Life Path Insights:
-           - Career: Strong period for professional growth in 2024
-           - Relationships: Favorable time for strengthening bonds
-           - Personal Growth: Focus on spiritual development
-        
-        5. Recommended Remedies:
-           - Gemstone: Ruby
-           - Mantra: Om Suryaya Namaha
-           - Best Days: Sunday for important initiatives`
-      );
+    try {
+      const response = await fetch('http://localhost:3000/api/horoscope-chart-svg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          year: formData.birthYear,
+          month: formData.birthMonth,
+          date: formData.birthDate,
+          hours: formData.birthHour,
+          minutes: formData.birthMinutes,
+          seconds: formData.birthSeconds,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          timezone: formData.timeZone,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setResult(data.output);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate horoscope');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleNext = () => {
+    if (currentStep < 4) setCurrentStep(prev => prev + 1);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) setCurrentStep(prev => prev - 1);
+  };
+
+  const renderPersonalInfo = () => (
+    <div className="space-y-8">
+      <FormInput
+        label="Full Name"
+        icon={User}
+        type="text"
+        name="personName"
+        value={formData.personName}
+        onChange={handleInputChange}
+        placeholder="Enter your full name"
+        required
+      />
+      <div className="space-y-3">
+        <label className="flex items-center gap-2 text-base font-medium text-gray-700 dark:text-gray-300">
+          <User className="h-5 w-5 text-indigo-600" />
+          Gender
+        </label>
+        <select
+          name="sex"
+          value={formData.sex}
+          onChange={handleInputChange}
+          className="block w-full h-12 rounded-lg border-gray-300 bg-white/50 
+                   transition-colors focus:border-indigo-500 focus:ring-2 
+                   focus:ring-indigo-500 dark:bg-gray-700/50 dark:border-gray-600 
+                   dark:text-white text-base px-4"
+          required
+        >
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+  );
+
+  const renderBirthDetails = () => (
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+          <Calendar className="h-5 w-5 text-indigo-600" />
+          Date of Birth
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormInput
+            label="Year"
+            type="number"
+            name="birthYear"
+            value={formData.birthYear}
+            onChange={handleInputChange}
+            min="1900"
+            max="2100"
+            required
+          />
+          <FormInput
+            label="Month"
+            type="number"
+            name="birthMonth"
+            value={formData.birthMonth}
+            onChange={handleInputChange}
+            min="1"
+            max="12"
+            required
+          />
+          <FormInput
+            label="Date"
+            type="number"
+            name="birthDate"
+            value={formData.birthDate}
+            onChange={handleInputChange}
+            min="1"
+            max="31"
+            required
+          />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+          <Clock className="h-5 w-5 text-indigo-600" />
+          Time of Birth
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormInput
+            label="Hour (24-hour)"
+            type="number"
+            name="birthHour"
+            value={formData.birthHour}
+            onChange={handleInputChange}
+            min="0"
+            max="23"
+            required
+          />
+          <FormInput
+            label="Minutes"
+            type="number"
+            name="birthMinutes"
+            value={formData.birthMinutes}
+            onChange={handleInputChange}
+            min="0"
+            max="59"
+            required
+          />
+          <FormInput
+            label="Seconds"
+            type="number"
+            name="birthSeconds"
+            value={formData.birthSeconds}
+            onChange={handleInputChange}
+            min="0"
+            max="59"
+            required
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLocationDetails = () => (
+    <div className="space-y-8">
+      <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+        <MapPin className="h-5 w-5 text-indigo-600" />
+        Birth Location
+      </h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormInput
+          label="City"
+          icon={MapPin}
+          type="text"
+          name="city"
+          value={formData.city}
+          onChange={handleInputChange}
+          placeholder="Enter city name"
+          required
+        />
+        <FormInput
+          label="State"
+          icon={MapPin}
+          type="text"
+          name="state"
+          value={formData.state}
+          onChange={handleInputChange}
+          placeholder="Enter state name"
+          required
+        />
+      </div>
+      <FormInput
+        label="Country"
+        icon={MapPin}
+        type="text"
+        name="country"
+        value={formData.country}
+        onChange={handleInputChange}
+        placeholder="Enter country name"
+        required
+      />
+    </div>
+  );
+
+  const renderResult = () => {
+    if (result) {
+      return (
+        <div className="mt-8 space-y-4">
+          <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+            <Star className="h-5 w-5 text-indigo-600" />
+            Your Horoscope Chart
+          </h4>
+          <div className="flex justify-center rounded-lg border border-gray-200 p-4 bg-white dark:bg-gray-700 dark:border-gray-600"
+               dangerouslySetInnerHTML={{ __html: result }} />
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6 space-x-4">
-            <Star className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
-            <Moon className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
-          </div>
-          <h1 className="text-4xl font-bold text-indigo-900 dark:text-white mb-4">
-            Discover Your Celestial Path
-          </h1>
-          <p className="text-lg text-indigo-600 dark:text-indigo-300">
-            Explore your astrological destiny through a personalized birth chart analysis
-          </p>
-        </div>
-
-        <Card className="shadow-xl border-t-4 border-t-indigo-500">
-          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 rounded-t-lg">
-            <CardTitle className="text-2xl text-indigo-900 dark:text-white">Your Birth Details</CardTitle>
-            <CardDescription className="text-indigo-600 dark:text-indigo-300">
-              Enter your details for an accurate astrological reading
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Date of Birth
-                    </label>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      required
-                      value={formData.dateOfBirth}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Time of Birth
-                    </label>
-                    <input
-                      type="time"
-                      name="timeOfBirth"
-                      required
-                      value={formData.timeOfBirth}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Gender
-                    </label>
-                    <select
-                      name="gender"
-                      required
-                      value={formData.gender}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                    >
-                      <option value="">Select Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      City of Birth
-                    </label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-indigo-400" />
-                      <input
-                        type="text"
-                        name="city"
-                        required
-                        value={formData.city}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 pl-10 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                        placeholder="Enter city name"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      State/Province
-                    </label>
-                    <input
-                      type="text"
-                      name="state"
-                      required
-                      value={formData.state}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-indigo-100 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                      placeholder="Enter state/province"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-center pt-8">
+    <div className="max-w-3xl mx-auto mt-8 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Kundali Generator</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StepIndicator currentStep={currentStep} totalSteps={4} />
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {currentStep === 1 && renderPersonalInfo()}
+            {currentStep === 2 && renderBirthDetails()}
+            {currentStep === 3 && renderLocationDetails()}
+            {currentStep === 4 && (
+              <div className="space-y-8">
                 <button
                   type="submit"
+                  className="w-full py-4 px-6 bg-indigo-600 hover:bg-indigo-700 
+                           text-white text-lg font-semibold rounded-lg shadow-lg 
+                           shadow-indigo-200 transition-all duration-200 
+                           disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
-                  className="inline-flex items-center px-8 py-4 text-lg font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors"
                 >
                   {loading ? (
-                    <>
-                      <Sparkles className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                      <span>Analyzing...</span>
-                    </>
+                    <div className="flex items-center justify-center gap-2">
+                      <Moon className="h-5 w-5 animate-spin" />
+                      Generating Your Horoscope...
+                    </div>
                   ) : (
-                    <>
-                      <Star className="mr-2 h-5 w-5" />
-                      <span>Generate Birth Chart</span>
-                    </>
+                    'Generate Horoscope'
                   )}
                 </button>
-              </div>
-            </form>
-
-            {kundaliResult && (
-              <div className="mt-8">
-                <Alert className="bg-indigo-50 dark:bg-gray-800 border-indigo-200 dark:border-indigo-800">
-                  <AlertDescription>
-                    <h3 className="text-2xl font-semibold text-indigo-900 dark:text-white mb-4">
-                      Your Astrological Insights
-                    </h3>
-                    <div className="prose prose-indigo dark:prose-invert max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-base bg-white dark:bg-gray-900 p-6 rounded-lg">
-                        {kundaliResult}
-                      </pre>
-                    </div>
-                  </AlertDescription>
-                </Alert>
+                {error && (
+                  <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-600">
+                    {error}
+                  </div>
+                )}
+                {renderResult()}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex justify-between pt-6">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="flex items-center gap-2 py-3 px-6 text-gray-600 
+                           hover:text-gray-900 font-medium rounded-lg 
+                           transition-colors duration-200"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
+                </button>
+              )}
+              {currentStep < 4 && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex items-center gap-2 py-3 px-6 bg-indigo-600 
+                           hover:bg-indigo-700 text-white font-medium rounded-lg 
+                           shadow-md shadow-indigo-200 transition-all duration-200"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

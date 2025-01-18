@@ -5,7 +5,9 @@ const cors = require('cors');
 const app = express();
 
 // Enable CORS for all origins (or restrict to your frontend origin)
-app.use(cors({}));
+app.use(cors({
+  origin: 'http://localhost:5173', // Replace with your frontend URL
+}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json());

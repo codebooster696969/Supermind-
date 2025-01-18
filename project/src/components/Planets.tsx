@@ -129,7 +129,7 @@ const PlanetDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:3000/api/planets-extended', {
+      const response = await fetch('https://supermind-qlr6.onrender.com/api/planets-extended', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

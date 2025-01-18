@@ -31,7 +31,7 @@ export default function AIInsights() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/api/yoga-durations', {
+      const response = await fetch('https://supermind-qlr6.onrender.com/api/yoga-durations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

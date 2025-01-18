@@ -38,19 +38,19 @@ export default function Navbar() {
       path: '/planets',
       icon: <Globe size={20} />,
       description: 'Learn about planetary influences and transits'
-    },
-    {
-      title: 'Transit Calculator',
-      path: '/transits',
-      icon: <Clock size={20} />,
-      description: 'Calculate planetary transits and their effects'
-    },
-    {
-      title: 'Location-based Charts',
-      path: '/location',
-      icon: <Map size={20} />,
-      description: 'Charts based on geographical coordinates'
     }
+    // {
+    //   title: 'Transit Calculator',
+    //   path: '/transits',
+    //   icon: <Clock size={20} />,
+    //   description: 'Calculate planetary transits and their effects'
+    // },
+    // {
+    //   title: 'Location-based Charts',
+    //   path: '/location',
+    //   icon: <Map size={20} />,
+    //   description: 'Charts based on geographical coordinates'
+    // }
   ];
 
   const closeAllMenus = () => {

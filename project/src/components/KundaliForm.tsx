@@ -139,7 +139,7 @@ export default function KundaliForm() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/api/horoscope-chart-svg', {
+      const response = await fetch('https://supermind-qlr6.onrender.com/api/horoscope-chart-svg', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

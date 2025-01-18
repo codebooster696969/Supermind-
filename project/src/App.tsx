@@ -7,6 +7,8 @@ import AIInsights from './components/AIInsights';
 import Chat from './components/Chat';
 import BirthChart from './components/BirthChart';
 import { ThemeProvider } from './components/ThemeContext';
+import Transit from './components/Transit';
+import Planets from './components/Planets';
 
 function App() {
   return (
@@ -18,7 +20,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/kundali" element={<KundaliForm />} />
             <Route path="/ai-insights" element={<AIInsights />} />
+            <Route path="/planets" element={<Planets />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path='/transits' element={<Transit/>}/>
             <Route path="/birth-chart" element={<BirthChart />} />
             {/* Add routes for other features */}
           </Routes>

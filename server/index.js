@@ -5,9 +5,7 @@ const cors = require('cors');
 const app = express();
 
 // Enable CORS for all origins (or restrict to your frontend origin)
-app.use(cors({
-  origin: 'https://astroguide.netlify.app', // Replace with your frontend URL
-}));
+app.use(cors({}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json());

@@ -96,7 +96,7 @@ const BirthChart = () => {
 
     try {
       // Fetch chart data
-      const chartResponse = await fetch('http://localhost:3000/api/navamsa-chart-info', {
+      const chartResponse = await fetch('https://supermind-qlr6.onrender.com/api/navamsa-chart-info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData)
